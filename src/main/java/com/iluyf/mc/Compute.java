@@ -1,8 +1,9 @@
 package com.iluyf.mc;
 
-import net.kyori.adventure.text.format.Style;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.*;
+
+import net.kyori.adventure.text.Component;
 
 public class Compute {
     final static short commonYearMonthCount = 27; // 平年的月数
@@ -30,7 +31,7 @@ public class Compute {
         short day;
     }
 
-    public String output(long annoDay) {
+    public Component output(long annoDay) {
         return annoToString(annoDay);
     }
 
@@ -114,7 +115,7 @@ public class Compute {
         return monthDayNumber;
     }
 
-    private String annoToString(long annoDay) {
+    private Component annoToString(long annoDay) {
         MonthDay monthDay = new MonthDay();
         monthDay = toMonthDay(annoDay);
         short dayNumber = (short) monthDay.day;
@@ -123,10 +124,12 @@ public class Compute {
         short monthNumber = (short) yearMonth.month;
         long yearNumber = yearMonth.year + 1;
         if (0 < yearNumber && 0 <= monthNumber && 0 < dayNumber) {
-            return BOLD + yearConvert(yearNumber) + Style.empty() + monthConvert(monthNumber) + Style.empty()
-                    + dayConvert((short) dayNumber) + Style.empty();
+            return Component.text()
+                    .append(Component.text(yearConvert(yearNumber)).decoration(BOLD, true))
+                    .append(monthConvert(monthNumber))
+                    .append(Component.text(dayConvert((short) dayNumber))).build();
         } else {
-            return "";
+            return Component.text("");
         }
     }
 
@@ -173,16 +176,16 @@ public class Compute {
         return "世界树纪元" + returnValue + "年";
     }
 
-    private final String monthConvert(short monthNumber) {
+    private final Component monthConvert(short monthNumber) {
         String str = String.valueOf(monthString.charAt(monthNumber)) + "月";
         if (7 > monthNumber) {
-            return AQUA + str;
+            return Component.text(str, AQUA);
         } else if (14 > monthNumber) {
-            return GREEN + str;
+            return Component.text(str, GREEN);
         } else if (21 > monthNumber) {
-            return RED + str;
+            return Component.text(str, RED);
         } else {
-            return GOLD + str;
+            return Component.text(str, GOLD);
         }
     }
 

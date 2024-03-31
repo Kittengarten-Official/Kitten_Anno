@@ -3,19 +3,16 @@ package com.iluyf.mc;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Random;
-import org.bukkit.Material;
+import net.kyori.adventure.text.Component;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.enchantments.EnchantmentWrapper;
-import org.bukkit.inventory.meta.EnchantmentStorageMeta;
-import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
+import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.potion.PotionType;
-import net.kyori.adventure.text.Component;
-import org.bukkit.potion.PotionData;
-import net.kyori.adventure.text.format.Style;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.*;
 
@@ -44,10 +41,13 @@ public class Reward {
                         .getString("reward.month" + String.valueOf(monthCycle) + ".quantity");
             }
         }
-        Bukkit.getServer()
-                .broadcast(Component.text(BOLD + "给予" + Style.empty() + BLUE + UNDERLINED + "[" + playerName + "]" + Style.empty() + BOLD
-                        + "月中随机奖励：" + Style.empty() + YELLOW + UNDERLINED + "[" + monthReward.name + "]" + Style.empty() + GREEN
-                        + monthReward.quantity + Style.empty() + "个"));
+        Bukkit.getServer().sendMessage(Component.text()
+                .append(Component.text("给予").decoration(BOLD, true))
+                .append(Component.text("[" + playerName + "]", BLUE, UNDERLINED))
+                .append(Component.text("月中随机奖励").decoration(BOLD, true))
+                .append(Component.text("[" + monthReward.name + "]", YELLOW, UNDERLINED))
+                .append(Component.text(monthReward.quantity, GREEN))
+                .append(Component.text("个")));
         return rewardOutput(monthReward, seed, annoDay);
     }
 
@@ -57,12 +57,16 @@ public class Reward {
         for (short monthCycle = 0; monthCycle <= Compute.commonYearMonthCount; ++monthCycle) {
             monthReward.name = Anno.annoConfig.getString("reward.month" + String.valueOf(normalNumber) + ".name");
             monthReward.id = Anno.annoConfig.getString("reward.month" + String.valueOf(normalNumber) + ".id");
-            monthReward.quantity = Anno.annoConfig.getString("reward.month" + String.valueOf(normalNumber) + ".quantity");
+            monthReward.quantity = Anno.annoConfig
+                    .getString("reward.month" + String.valueOf(normalNumber) + ".quantity");
         }
-        Bukkit.getServer()
-                .broadcast(Component.text((BOLD + "给予" + Style.empty() + BLUE + UNDERLINED + "[" + playerName + "]" + Style.empty()
-                        + BOLD + "月初固定奖励：" + Style.empty() + YELLOW + UNDERLINED + "[" + monthReward.name + "]" + Style.empty() + GREEN
-                        + monthReward.quantity + Style.empty() + "个")));
+        Bukkit.getServer().sendMessage(Component.text()
+                .append(Component.text("给予").decoration(BOLD, true))
+                .append(Component.text("[" + playerName + "]", BLUE, UNDERLINED))
+                .append(Component.text("月初固定奖励：").decoration(BOLD, true))
+                .append(Component.text("[" + monthReward.name + "]", YELLOW, UNDERLINED))
+                .append(Component.text(monthReward.quantity, GREEN))
+                .append(Component.text("个")));
         return rewardOutput(monthReward, seed, annoDay);
     }
 
@@ -73,26 +77,32 @@ public class Reward {
         } else {
             ItemStack itemReward = new ItemStack(Material.getMaterial(monthReward.id.toUpperCase()),
                     Integer.valueOf(monthReward.quantity));
-            return mendingOrLuck(monthReward, itemReward);
+            return luckOrEnchantedBook(monthReward, itemReward);
         }
     }
 
-    private ItemStack mendingOrLuck(MonthReward monthReward, ItemStack itemReward) {
+    private ItemStack luckOrEnchantedBook(MonthReward monthReward, ItemStack itemReward) {
+        if (monthReward.id.equalsIgnoreCase("potion")) {
+            PotionMeta potionMeta = (PotionMeta) itemReward.getItemMeta();
+            potionMeta.setBasePotionType(PotionType.LUCK);
+            itemReward.setItemMeta(potionMeta);
+            return itemReward;
+        }
         Enchantment enchantment;
         if (monthReward.id.equalsIgnoreCase("ENCHANTED_BOOK")) {
-            if (monthReward.name.equals("附魔书（迅捷潜行）")) {
-                enchantment = new EnchantmentWrapper("swift_sneak");
-            } else {
-                enchantment = new EnchantmentWrapper("mending");
+            switch (monthReward.name) {
+                case "附魔书（迅捷潜行）":
+                    enchantment = Enchantment.SWIFT_SNEAK;
+                    break;
+                case "附魔书（经验修补）":
+                    enchantment = Enchantment.MENDING;
+                    break;
+                default:
+                    return itemReward;
             }
             EnchantmentStorageMeta enchantmentStorageMeta = (EnchantmentStorageMeta) itemReward.getItemMeta();
             enchantmentStorageMeta.addStoredEnchant(enchantment, enchantment.getMaxLevel(), false);
             itemReward.setItemMeta(enchantmentStorageMeta);
-        } else if (monthReward.id.equalsIgnoreCase("potion")) {
-            PotionData potionData = new PotionData(PotionType.LUCK);
-            PotionMeta potionMeta = (PotionMeta) itemReward.getItemMeta();
-            potionMeta.setBasePotionData(potionData);
-            itemReward.setItemMeta(potionMeta);
         }
         return itemReward;
     }

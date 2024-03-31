@@ -7,7 +7,7 @@
     <!-- The Basics -->
     <groupId>com.iluyf.mc</groupId>
     <artifactId>KittenAnnoPaper</artifactId>
-    <version>3.2</version>
+    <version>3.3</version>
     <name>KittenAnno</name>
     <description>Minecraft 世界树纪元 Paper 插件</description>
     <url>https://github.com/Kittengarten/KittenAnnoPaper</url>
@@ -16,7 +16,7 @@
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.20-R0.1-SNAPSHOT</version>
+            <version>1.20.4-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

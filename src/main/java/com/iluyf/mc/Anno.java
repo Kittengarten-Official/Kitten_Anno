@@ -1,6 +1,9 @@
 package com.iluyf.mc;
 
-import org.bukkit.Bukkit;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import net.kyori.adventure.text.Component;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -10,11 +13,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import net.kyori.adventure.text.Component;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import net.kyori.adventure.text.format.Style;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public class Anno extends JavaPlugin implements Listener {
@@ -34,7 +32,7 @@ public class Anno extends JavaPlugin implements Listener {
     }
 
     // 获取播报内容
-    public String getAnnoBroadcast() {
+    public Component getAnnoBroadcast() {
         try {
             day = getDay();
             Compute annoCompute = new Compute();
@@ -42,12 +40,12 @@ public class Anno extends JavaPlugin implements Listener {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        return "";
+        return Component.text("");
     }
 
     @Override
     public void onLoad() {
-        getLogger().info(AQUA + "世界树纪元已加载。" + Style.empty());
+        getServer().sendMessage(Component.text("世界树纪元已加载。", AQUA));
     }
 
     @Override
@@ -55,13 +53,13 @@ public class Anno extends JavaPlugin implements Listener {
         this.getCommand("kittenanno").setExecutor(new AnnoCommand());
         getServer().getPluginManager().registerEvents(new JoinListener(), this);
         annoConfig = getConfig();
-        getLogger().info(GREEN + "世界树纪元开始运行。" + Style.empty());
+        getServer().sendMessage(Component.text("世界树纪元开始运行。", GREEN));
         new BukkitRunnable() {
             @Override
             public void run() {
                 try {
                     if (getDay() > day) {
-                        Bukkit.getServer().broadcast(Component.text(getAnnoBroadcast()));
+                        getServer().sendMessage(getAnnoBroadcast());
                         new Reward().giveReward(day);
                     }
                 } catch (ParseException e) {
@@ -73,7 +71,7 @@ public class Anno extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
-        getLogger().info(RED + "世界树纪元暂停运行。" + Style.empty());
+        getServer().sendMessage(Component.text("世界树纪元暂停运行。", RED));
     }
 
     public class AnnoCommand implements CommandExecutor {
@@ -93,7 +91,7 @@ public class Anno extends JavaPlugin implements Listener {
         @EventHandler
         public void onJoin(PlayerJoinEvent event) throws ParseException {
             event.getPlayer().sendMessage(annoConfig.getString("welcome_messages"));
-            event.getPlayer().sendMessage("今天是" + getAnnoBroadcast());
+            event.getPlayer().sendMessage(Component.text("今天是").append(getAnnoBroadcast()));
         }
     }
 }
